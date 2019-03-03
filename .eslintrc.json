@@ -3,7 +3,7 @@
         "browser": true,
         "es6": true
     },
-    "extends": "google",
+    "extends": "airbnb-base",
     "globals": {
         "Atomics": "readonly",
         "SharedArrayBuffer": "readonly"
@@ -13,5 +13,6 @@
         "sourceType": "module"
     },
     "rules": {
+      "no-console": 0
     }
 }
