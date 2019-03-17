@@ -38,4 +38,33 @@ export default class UsersController {
         });
       });
   }
+
+  /**
+   * Return User Object from DAO
+   */
+  static apiLogin(req, res, next) {
+    UsersDao.getUserByQuery({ email: req.body.email })
+      .then((user) => {
+        if (user.password === req.body.password) {
+          res.status(200).json({
+            message: 'Login Successful!',
+            validation: true,
+            data: {
+              user_id: user._id
+            }
+          });
+        } else {
+          res.status(401).json({
+            message: 'Wrong password!',
+            validation: false
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({
+          message: 'Error occured!',
+        });
+      });
+  }
 }

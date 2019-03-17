@@ -35,4 +35,13 @@ export default class UsersDAO {
   static addUser(user) {
     return users.create(user);
   }
+
+  /**
+   * Retrieve User object
+   * @param {ObjectId} id User Id
+   */
+  static getUserByQuery(query) {
+    return users.findOne(query)
+      .select('+password');
+  }
 }
