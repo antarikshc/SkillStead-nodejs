@@ -70,13 +70,43 @@ export default class CategoryController {
    * @param {Object} res
    * @param {Object} next
    */
-  static apiAddQuestionInCategory(req, res, next) {
+  static apiAddQuestionInCategoryId(req, res, next) {
     QuestionDAO.createQuestion(req.body)
       .then((question) => {
-        CategoryDAO.addQuestion(req.params.id, question._id)
+        CategoryDAO.addQuestionById(req.params.id, question._id)
           .then((category) => {
             res.status(200).json({
-              message: 'Question added in!'
+              message: `Question added in ${category.name}!`
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(500).json({
+              message: 'Error occured!',
+            });
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({
+          message: 'Error occured!',
+        });
+      });
+  }
+
+  /**
+ * Add Question in Category
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Object} next
+ */
+  static apiAddQuestionInCategoryCode(req, res, next) {
+    QuestionDAO.createQuestion(req.body)
+      .then((question) => {
+        CategoryDAO.addQuestionByCode(req.params.code, question._id)
+          .then((category) => {
+            res.status(200).json({
+              message: `Question added in ${category.name}!`
             });
           })
           .catch((err) => {

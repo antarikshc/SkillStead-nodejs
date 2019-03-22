@@ -47,12 +47,26 @@ export default class CategoryDAO {
   }
 
   /**
-   * Adds a quesition into category
+   * Adds a quesition into category with category Id
    * @param {String} categoryId
    * @param {ObjectId} question
    */
-  static addQuestion(categoryId, question) {
+  static addQuestionById(categoryId, question) {
     return category.findOneAndUpdate({ _id: categoryId },
+      {
+        $push: {
+          questions: question
+        }
+      });
+  }
+
+  /**
+   * Adds a quesition into category with category code
+   * @param {String} categoryCode
+   * @param {ObjectId} question
+   */
+  static addQuestionByCode(categoryCode, question) {
+    return category.findOneAndUpdate({ code: categoryCode },
       {
         $push: {
           questions: question
