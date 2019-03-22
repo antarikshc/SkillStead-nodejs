@@ -22,23 +22,23 @@ export default class UsersDAO {
 
   /**
    * Retrieve User object
-   * @param {ObjectId} id User Id
+   * @param {ObjectId} id
    */
   static getUserById(id) {
     return users.findOne(id);
   }
 
   /**
-   * Add User into collections
-   * @param {userSchema} user User object
+   * Create user
+   * @param {Object} user
    */
-  static addUser(user) {
+  static createUser(user) {
     return users.create(user);
   }
 
   /**
-   * Retrieve User object
-   * @param {ObjectId} id User Id
+   * Retrieve user by running query
+   * @param {Object} query
    */
   static getUserByQuery(query) {
     return users.findOne(query)

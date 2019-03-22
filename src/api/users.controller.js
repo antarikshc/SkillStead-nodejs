@@ -21,7 +21,7 @@ export default class UsersController {
    * Insert User Object into DB
    */
   static apiSignUp(req, res, next) {
-    UsersDao.addUser(req.body)
+    UsersDao.createUser(req.body)
       .then((user) => {
         res.status(200).json({
           message: 'Sign Up Successful!',
