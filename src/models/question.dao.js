@@ -29,6 +29,14 @@ export default class QuestionDAO {
   }
 
   /**
+   * Retrieve Question object
+   * @param {ObjectId} id
+   */
+  static getAllQuestions() {
+    return question.find();
+  }
+
+  /**
    * Add a Question into collections
    * @param {Object} object
    */
