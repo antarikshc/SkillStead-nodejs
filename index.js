@@ -3,6 +3,7 @@ import app from './server';
 import UsersDAO from './src/models/users.dao';
 import CategoryDAO from './src/models/category.dao';
 import QuestionDAO from './src/models/question.dao';
+import SocketController from './src/game/main.socket';
 
 require('dotenv').config();
 
@@ -29,7 +30,9 @@ mongoose.createConnection(
     await QuestionDAO.injectDB(client);
 
     // Proceed to listen for incoming requests
-    app.listen(app.get('port'), () => {
+    const server = app.listen(app.get('port'), () => {
       console.log(`Server is running on ${app.get('port')}`);
     });
+
+    await SocketController.startSocket(server);
   });
