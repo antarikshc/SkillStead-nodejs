@@ -11,8 +11,6 @@ export default class MatchController {
     // Each Socket in Socket.IO is identified by a random, unguessable, unique identifier
     // and each socket automatically joins a room identified by this id.
     // To send message to specific Socket connection we send message to the default room
-    console.log(playerOne);
-    console.log(playerTwo);
     MatchDAO.createMatch({
       playerOne: {
         player_id: playerOne.userId
@@ -25,6 +23,7 @@ export default class MatchController {
       .then((match) => {
         // Create and emit room details to both players
         // Here matchId is the roomId
+        console.log(`Created room ${match._id}`);
         socket.to(playerOne.socketId).emit('matchSpawned', { roomId: match._id });
         socket.to(playerTwo.socketId).emit('matchSpawned', { roomId: match._id });
       })

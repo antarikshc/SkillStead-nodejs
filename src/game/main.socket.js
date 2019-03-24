@@ -63,6 +63,13 @@ export default class SocketController {
         }
       });
 
+      /**
+       * Put player into Room
+       */
+      client.on('joinRoom', (data) => {
+        client.join(data.roomId);
+        console.log(`${client.id} joined the room ${data.roomId}`);
+      });
 
       client.on('disconnect', () => {
         // Remove player from queue if present
