@@ -1,10 +1,12 @@
 import socket from 'socket.io';
 import _ from 'lodash';
+import MatchController from './match.socket';
 
 // Root level Socket client
 let io;
 
 // Array of Socket ID's to handle matchmaking queue
+// Keep Socket Id of each player and userId received in data
 const queue = [];
 
 export default class SocketController {
@@ -22,18 +24,31 @@ export default class SocketController {
        * Adds the player to queue
        * If a match is found, spawn a room for the players
        */
-      client.on('userJoinQueue', () => {
+      client.on('userJoinQueue', (data) => {
+        // Check if player is already queueing
         if (queue.filter(item => item.socketId === client.id).length > 0) {
           console.log('Player already in queue');
           return;
         }
 
         if (queue.length > 0) {
-          const opponentId = (queue.shift()).socketId;
-          _.remove(queue, item => item.socketId === opponentId);
-          console.log(`${client.id} and ${opponentId} has matched`);
+          // Queue has players, match the first player in queue
+          const opponent = queue.shift();
+          console.log(`${client.id} and ${opponent.socketId} has matched`);
+
+          // Create room and start match
+          // Player already present in the queue will become playerOne
+          MatchController.createRoom(
+            io,
+            { socketId: opponent.socketId, userId: opponent.userId }, // playerOne
+            { socketId: client.id, userId: data.userId } // playerTwo
+          );
         } else {
-          queue.push({ socketId: client.id });
+          // Queue is empty, add the player in waiting
+          queue.push({
+            socketId: client.id,
+            userId: data.userId
+          });
           console.log(`${client.id} added to match-queue`);
         }
       });
