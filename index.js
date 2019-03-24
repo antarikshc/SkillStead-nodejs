@@ -4,6 +4,7 @@ import UsersDAO from './src/models/users.dao';
 import CategoryDAO from './src/models/category.dao';
 import QuestionDAO from './src/models/question.dao';
 import SocketController from './src/game/main.socket';
+import MatchDAO from './src/models/match.dao';
 
 require('dotenv').config();
 
@@ -28,6 +29,7 @@ mongoose.createConnection(
     await UsersDAO.injectDB(client);
     await CategoryDAO.injectDB(client);
     await QuestionDAO.injectDB(client);
+    await MatchDAO.injectDB(client);
 
     // Proceed to listen for incoming requests
     const server = app.listen(app.get('port'), () => {
