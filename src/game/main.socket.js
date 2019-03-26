@@ -1,6 +1,7 @@
 import socket from 'socket.io';
 import _ from 'lodash';
 import MatchController from './match.socket';
+import RedisClient from './redis.client';
 
 // Root level Socket client
 let io;
@@ -16,6 +17,9 @@ export default class SocketController {
    */
   static async startSocket(server) {
     io = socket(server);
+
+    MatchController.init(io);
+    RedisClient.init();
 
     io.on('connection', (client) => {
       console.log(`Client ${client.id} has been connected`);
@@ -39,7 +43,6 @@ export default class SocketController {
           // Create room and start match
           // Player already present in the queue will become playerOne
           MatchController.createRoom(
-            io,
             { socketId: opponent.socketId, userId: opponent.userId }, // playerOne
             { socketId: client.id, userId: data.userId } // playerTwo
           );
@@ -64,12 +67,9 @@ export default class SocketController {
       });
 
       /**
-       * Put player into Room
+       * Offloading to MatchController
        */
-      client.on('joinRoom', (data) => {
-        client.join(data.roomId);
-        console.log(`${client.id} joined the room ${data.roomId}`);
-      });
+      MatchController.listenForJoinRoom(client);
 
       client.on('disconnect', () => {
         // Remove player from queue if present
