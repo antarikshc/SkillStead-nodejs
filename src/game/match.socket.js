@@ -62,15 +62,16 @@ export default class MatchController {
       RedisClient.getMatchStatus(data.roomId)
         .then((res) => {
           const matchStatus = JSON.parse(res);
-          if (matchStatus.playerOne === 1 && matchStatus.playerTwo === 1) {
+
+          if (data.player === 1) {
+            matchStatus.playerOne = 1;
+          } else if (data.player === 2) {
+            matchStatus.playerTwo = 1;
+          }
+
+          RedisClient.setMatchStatus(data.roomId, matchStatus);
+          if (data.player === 2) {
             this.initMatch(data.roomId);
-          } else {
-            console.log(matchStatus);
-            if (data.player === 1) {
-              matchStatus.playerOne = 1;
-            } else if (data.player === 2) {
-              matchStatus.playerTwo = 1;
-            }
           }
         });
     });
@@ -81,9 +82,31 @@ export default class MatchController {
    * @param {String} roomId
    */
   static initMatch(roomId) {
-    io.to(roomId).emit(
-      'matchStarted',
-      JSON.parse(RedisClient.getMatchStatus(`${roomId}-status`))
-    );
+    this.sendQuestions(roomId);
+  }
+
+  /**
+   * Send 10 Random questions through socket and stores it in Redis
+   */
+  static sendQuestions(roomId) {
+    QuestionDAO.getAllQuestions()
+      .then((questions) => {
+        // Shuffle array
+        const shuffled = questions.sort(() => 0.5 - Math.random());
+        // Get sub-array of first 10 elements after shuffled
+        const selected = shuffled.slice(0, 10);
+
+        console.log(selected);
+        // Save it in Redis
+        RedisClient.setQuestions(roomId, selected);
+
+        io.to(roomId).emit(
+          'matchStarted',
+          { questions: selected }
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 }
