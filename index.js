@@ -5,6 +5,7 @@ import CategoryDAO from './src/models/category.dao';
 import QuestionDAO from './src/models/question.dao';
 import SocketController from './src/game/main.socket';
 import MatchDAO from './src/models/match.dao';
+import RedisClient from './src/game/redis.client';
 
 require('dotenv').config();
 
@@ -25,11 +26,14 @@ mongoose.createConnection(
     process.exit(1);
   })
   .then(async (client) => {
+    console.log('Connection established: MongoDB');
     // We got the connection to DB, inject to DAO
     await UsersDAO.injectDB(client);
     await CategoryDAO.injectDB(client);
     await QuestionDAO.injectDB(client);
     await MatchDAO.injectDB(client);
+
+    await RedisClient.init();
 
     // Proceed to listen for incoming requests
     const server = app.listen(app.get('port'), () => {

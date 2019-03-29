@@ -1,7 +1,6 @@
 import socket from 'socket.io';
 import _ from 'lodash';
 import MatchController from './match.socket';
-import RedisClient from './redis.client';
 
 // Root level Socket client
 let io;
@@ -19,7 +18,6 @@ export default class SocketController {
     io = socket(server);
 
     MatchController.init(io);
-    RedisClient.init();
 
     io.on('connection', (client) => {
       console.log(`Client ${client.id} has been connected`);

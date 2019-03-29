@@ -95,8 +95,6 @@ export default class MatchController {
         const shuffled = questions.sort(() => 0.5 - Math.random());
         // Get sub-array of first 10 elements after shuffled
         const selected = shuffled.slice(0, 10);
-
-        console.log(selected);
         // Save it in Redis
         RedisClient.setQuestions(roomId, selected);
 

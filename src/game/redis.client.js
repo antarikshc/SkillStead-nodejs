@@ -12,11 +12,11 @@ export default class RedisClient {
   /**
    * Connect to Redis server
    */
-  static init() {
+  static async init() {
     redis = redisCli.createClient();
 
     redis.on('connect', () => {
-      console.log('Redis client connected');
+      console.log('Connection established: Redis');
     });
   }
 
