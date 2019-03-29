@@ -40,13 +40,10 @@ export default class MatchController {
         io.to(playerOne.socketId).emit('matchSpawned', { roomId: match._id, player: 1 });
         io.to(playerTwo.socketId).emit('matchSpawned', { roomId: match._id, player: 2 });
 
+        console.log(match);
         RedisClient.setMatchStatus(
           match._id,
-          {
-            playerOne: 0,
-            playerTwo: 0,
-            questionCount: 0
-          }
+          match
         );
       })
       .catch((err) => {
@@ -56,28 +53,29 @@ export default class MatchController {
 
   /**
    * Listener for Join room, if both players are joined initiate match
-   * @param {Socket} socket Root Socket
+   * @param {Socket} socket Socket
    */
   static listenForJoinRoom(socket) {
     socket.on('joinRoom', (data) => {
       socket.join(data.roomId);
       console.log(`${socket.id} joined the room ${data.roomId}`);
 
-      RedisClient.getMatchStatus(data.roomId)
-        .then((res) => {
-          const matchStatus = JSON.parse(res);
+      if (data.player === 2) {
+        this.initMatch(data.roomId);
+      }
 
-          if (data.player === 1) {
-            matchStatus.playerOne = 1;
-          } else if (data.player === 2) {
-            matchStatus.playerTwo = 1;
-          }
+      // RedisClient.getMatchStatus(data.roomId)
+      //   .then((res) => {
+      //     const matchStatus = JSON.parse(res);
 
-          RedisClient.setMatchStatus(data.roomId, matchStatus);
-          if (data.player === 2) {
-            this.initMatch(data.roomId);
-          }
-        });
+      //     matchStatus.room.push(socket.id);
+
+      //     RedisClient.setMatchStatus(data.roomId, matchStatus);
+      //     console.log(matchStatus.room);
+      //     if (matchStatus.room.length === 2) {
+      //       this.initMatch(data.roomId);
+      //     }
+      //   });
     });
   }
 

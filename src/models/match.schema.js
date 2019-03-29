@@ -10,12 +10,26 @@ const matchSchema = new mongoose.Schema({
     player_id: String,
     score: String
   },
+  winner: Number, // value 1 & 2 for players, 3 for tie
   questions: [{
     question: String,
     options: [String],
     answer: Number, // index of options
-    winner: Number // value 1 & 2 for players
+    questionWinner: Number, // value 1 & 2 for players, 3 for tie
+    responses: {
+      playerOne: {
+        answer: Number,
+        time: Number, // in second
+        isCorrect: Boolean
+      },
+      playerTwo: {
+        answer: Number,
+        time: Number, // in second
+        isCorrect: Boolean
+      }
+    }
   }],
+  room: [String],
   isCompleted: Boolean
 });
 

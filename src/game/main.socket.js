@@ -28,6 +28,7 @@ export default class SocketController {
        */
       client.on('userJoinQueue', (data) => {
         // Check if player is already queueing
+        // if (queue.filter(item => item.userId === data.userId).length > 0) {
         if (queue.filter(item => item.socketId === client.id).length > 0) {
           console.log('Player already in queue');
           return;
