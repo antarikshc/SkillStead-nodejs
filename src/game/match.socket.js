@@ -54,6 +54,10 @@ export default class MatchController {
       });
   }
 
+  /**
+   * Listener for Join room, if both players are joined initiate match
+   * @param {Socket} socket Root Socket
+   */
   static listenForJoinRoom(socket) {
     socket.on('joinRoom', (data) => {
       socket.join(data.roomId);
@@ -100,7 +104,7 @@ export default class MatchController {
 
         io.to(roomId).emit(
           'matchStarted',
-          { questions: selected }
+          selected,
         );
       })
       .catch((err) => {
