@@ -43,6 +43,11 @@ export default class RedisClient {
    * @param {Array} questions
    */
   static setQuestions(matchId, questions) {
-    redis.set(`${matchId}-questions`, JSON.stringify(questions), redis.print);
+    redis.getAsync(`${matchId}-status`)
+      .then((result) => {
+        const matchStatus = JSON.parse(result);
+        matchStatus.questions = questions;
+        redis.set(`${matchId}-status`, JSON.stringify(matchStatus), redis.print);
+      });
   }
 }

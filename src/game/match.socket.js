@@ -40,7 +40,6 @@ export default class MatchController {
         io.to(playerOne.socketId).emit('matchSpawned', { roomId: match._id, player: 1 });
         io.to(playerTwo.socketId).emit('matchSpawned', { roomId: match._id, player: 2 });
 
-        console.log(match);
         RedisClient.setMatchStatus(
           match._id,
           match
