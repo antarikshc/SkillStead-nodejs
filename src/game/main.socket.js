@@ -69,6 +69,7 @@ export default class SocketController {
        * Offloading to MatchController
        */
       MatchController.listenForJoinRoom(client);
+      MatchController.listenForResponse(client);
 
       client.on('disconnect', () => {
         // Remove player from queue if present

@@ -52,7 +52,7 @@ export default class MatchController {
 
   /**
    * Listener for Join room, if both players are joined initiate match
-   * @param {Socket} socket Socket
+   * @param {Socket} socket Socket Client
    */
   static listenForJoinRoom(socket) {
     socket.on('joinRoom', (data) => {
@@ -63,6 +63,7 @@ export default class MatchController {
         this.initMatch(data.roomId);
       }
 
+      // TODO:
       // RedisClient.getMatchStatus(data.roomId)
       //   .then((res) => {
       //     const matchStatus = JSON.parse(res);
@@ -87,6 +88,17 @@ export default class MatchController {
   }
 
   /**
+   * Listener for recording responses
+   * @param {Socket} socket Client
+   */
+  static listenForResponse(socket) {
+    socket.on('recordResponse', (data) => {
+      this.addResponse(data.match, data.response);
+    });
+  }
+
+
+  /**
    * Send 10 Random questions through socket and stores it in Redis
    */
   static sendQuestions(roomId) {
@@ -106,6 +118,32 @@ export default class MatchController {
       })
       .catch((err) => {
         console.log(err);
+      });
+  }
+
+  /**
+ * Record response of player
+ * @param {Object} match
+ * @param {Object} response
+ */
+  static addResponse(match, response) {
+    RedisClient.getMatchStatus(match.id)
+      .then((result) => {
+        const matchStatus = JSON.parse(result);
+        const currentQuestion = matchStatus.questions[match.count];
+        currentQuestion.responses = {};
+
+        if (match.player === 1) {
+          currentQuestion.responses.playerOne = response;
+          matchStatus.questions[match.count] = currentQuestion;
+          console.log(currentQuestion);
+          RedisClient.setMatchStatus(match.id, matchStatus);
+        } else if (match.player === 2) {
+          currentQuestion.responses.playerTwo = response;
+          matchStatus.questions[match.count] = currentQuestion;
+          console.log(currentQuestion);
+          RedisClient.setMatchStatus(match.id, matchStatus);
+        }
       });
   }
 }
