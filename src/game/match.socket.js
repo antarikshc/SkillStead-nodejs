@@ -61,9 +61,14 @@ export default class MatchController {
       socket.join(data.roomId);
       console.log(`${socket.id} joined the room ${data.roomId}`);
 
-      this.initMatch(data.roomId);
+      setTimeout(() => {
+        this.initMatch(data.roomId);
+      }, 1500);
 
-      // TODO:
+      // TODO: We can keep the above delay and then
+      // check whether both players have joined room or not
+      // Start or cancel match after that
+
       // RedisClient.getMatchStatus(data.roomId)
       //   .then((res) => {
       //     const matchStatus = JSON.parse(res);
