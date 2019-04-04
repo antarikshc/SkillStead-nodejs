@@ -102,6 +102,15 @@ export default class MatchController {
     });
   }
 
+  /**
+   * Emit for next question
+   * @param {String} roomId
+   * @param {Int} winner Player number
+   */
+  static emitNextQuestion(roomId, winner) {
+    io.to(roomId).emit('queueNextQuestion', { winner });
+  }
+
 
   /**
    * Send 10 Random questions through socket and stores it in Redis
@@ -151,6 +160,7 @@ export default class MatchController {
         }
 
         if (match.player === 1) {
+          console.log('Response received for Player One');
           currentQuestion.responses.playerOne = response;
           matchStatus.questions[match.count] = currentQuestion;
 
@@ -162,6 +172,7 @@ export default class MatchController {
             RedisClient.setMatchStatus(match.id, matchStatus);
           }
         } else if (match.player === 2) {
+          console.log('Response received for Player Two');
           currentQuestion.responses.playerTwo = response;
           matchStatus.questions[match.count] = currentQuestion;
 
@@ -190,17 +201,20 @@ export default class MatchController {
       // Check timing and decide winner
       if (question.responses.playerOne.time > question.responses.playerTwo.time) {
         // Player One won
+        console.log(`Round ${questionCount}: Player One`);
         question.questionWinner = 1;
         match.playerOne.score += 10;
         match.playerTwo.score += 5;
       } else if (question.responses.playerOne.time
         < question.responses.playerTwo.time) {
         // Player Two won
+        console.log(`Round ${questionCount}: Player Two`);
         question.questionWinner = 2;
         match.playerOne.score += 5;
         match.playerTwo.score += 10;
       } else {
         // Tie
+        console.log(`Round ${questionCount}: Tie`);
         question.questionWinner = 3;
         match.playerOne.score += 5;
         match.playerTwo.score += 5;
@@ -208,19 +222,28 @@ export default class MatchController {
     } else if (question.responses.playerOne.isCorrect
       && !question.responses.playerTwo.isCorrect) {
       // Player One won
+      console.log(`Round ${questionCount}: Player One`);
       question.questionWinner = 1;
       match.playerOne.score += 10;
       match.playerTwo.score += 0;
     } else if (!question.responses.playerOne.isCorrect
       && question.responses.playerTwo.isCorrect) {
       // Player Two won
+      console.log(`Round ${questionCount}: Player Two`);
       question.questionWinner = 2;
       match.playerOne.score += 0;
       match.playerTwo.score += 10;
+    } else if (!question.responses.playerOne.isCorrect
+      && !question.responses.playerTwo.isCorrect) {
+      // Both players are dumb
+      console.log(`Round ${questionCount}: Tie`);
+      question.questionWinner = 3;
     }
 
     match.questions[questionCount] = question;
-    console.log(match);
     RedisClient.setMatchStatus(match._id, match);
+    if (questionCount < 10) {
+      this.emitNextQuestion(match._id, question.questionWinner);
+    }
   }
 }
