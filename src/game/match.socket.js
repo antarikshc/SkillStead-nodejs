@@ -105,10 +105,10 @@ export default class MatchController {
   /**
    * Emit for next question
    * @param {String} roomId
-   * @param {Int} winner Player number
+   * @param {Object} score
    */
-  static emitNextQuestion(roomId, winner) {
-    io.to(roomId).emit('queueNextQuestion', { winner });
+  static emitNextQuestion(roomId, score) {
+    io.to(roomId).emit('queueNextQuestion', score);
   }
 
 
@@ -243,7 +243,11 @@ export default class MatchController {
     match.questions[questionCount] = question;
     RedisClient.setMatchStatus(match._id, match);
     if (questionCount < 10) {
-      this.emitNextQuestion(match._id, question.questionWinner);
+      this.emitNextQuestion(match._id, {
+        winner: question.questionWinner,
+        playerOne: match.playerOne.score,
+        playerTwo: match.playerTwo.score
+      });
     }
   }
 }
