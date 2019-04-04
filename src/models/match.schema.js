@@ -30,7 +30,7 @@ const matchSchema = new mongoose.Schema({
     }
   }],
   room: [String],
-  isCompleted: Boolean
+  status: Number // 0 - not started, 1 - ongoing, 2 - finished
 });
 
 // Create and Export schema
