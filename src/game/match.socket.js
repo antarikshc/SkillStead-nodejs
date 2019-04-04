@@ -26,12 +26,14 @@ export default class MatchController {
     // To send message to specific Socket connection we send message to the default room
     MatchDAO.createMatch({
       playerOne: {
-        player_id: playerOne.userId
+        player_id: playerOne.userId,
+        score: 0
       },
       playerTwo: {
-        player_id: playerTwo.userId
+        player_id: playerTwo.userId,
+        score: 0
       },
-      isCompleted: false
+      status: 0
     })
       .then((match) => {
         // Create and emit room details to both players
@@ -59,9 +61,7 @@ export default class MatchController {
       socket.join(data.roomId);
       console.log(`${socket.id} joined the room ${data.roomId}`);
 
-      if (data.player === 2) {
-        this.initMatch(data.roomId);
-      }
+      this.initMatch(data.roomId);
 
       // TODO:
       // RedisClient.getMatchStatus(data.roomId)
@@ -108,13 +108,22 @@ export default class MatchController {
         const shuffled = questions.sort(() => 0.5 - Math.random());
         // Get sub-array of first 10 elements after shuffled
         const selected = shuffled.slice(0, 10);
-        // Save it in Redis
-        RedisClient.setQuestions(roomId, selected);
 
-        io.to(roomId).emit(
-          'matchStarted',
-          selected,
-        );
+        RedisClient.getMatchStatus(roomId)
+          .then((match) => {
+            const matchStatus = JSON.parse(match);
+            if (matchStatus.status === 0) {
+              // Save it in Redis
+              RedisClient.setQuestions(roomId, selected);
+
+              io.to(roomId).emit(
+                'matchStarted',
+                selected,
+              );
+            } else {
+              console.log('Match ongoing, Questions already sent.');
+            }
+          });
       })
       .catch((err) => {
         console.log(err);
@@ -131,6 +140,7 @@ export default class MatchController {
       .then((result) => {
         const matchStatus = JSON.parse(result);
         const currentQuestion = matchStatus.questions[match.count];
+
         if (!('responses' in currentQuestion)) {
           currentQuestion.responses = {};
         }
@@ -138,14 +148,74 @@ export default class MatchController {
         if (match.player === 1) {
           currentQuestion.responses.playerOne = response;
           matchStatus.questions[match.count] = currentQuestion;
-          console.log(currentQuestion);
-          RedisClient.setMatchStatus(match.id, matchStatus);
+
+          if ('playerTwo' in currentQuestion.responses) {
+            // If both players have recorded responses then calculate winner
+            this.calculateWinner(matchStatus, match.count);
+          } else {
+            // Just update Match Status
+            RedisClient.setMatchStatus(match.id, matchStatus);
+          }
         } else if (match.player === 2) {
           currentQuestion.responses.playerTwo = response;
           matchStatus.questions[match.count] = currentQuestion;
-          console.log(currentQuestion);
-          RedisClient.setMatchStatus(match.id, matchStatus);
+
+          if ('playerOne' in currentQuestion.responses) {
+            // If both players have recorded responses then calculate winner
+            this.calculateWinner(matchStatus, match.count);
+          } else {
+            // Just update Match Status
+            RedisClient.setMatchStatus(match.id, matchStatus);
+          }
         }
       });
+  }
+
+  /**
+   * Calculate winner by addressing all the cases
+   * @param {Object} matchStatus
+   * @param {Int} questionCount
+   */
+  static calculateWinner(matchStatus, questionCount) {
+    const match = matchStatus;
+    const question = match.questions[questionCount];
+
+    if (question.responses.playerOne.isCorrect
+      && question.responses.playerTwo.isCorrect) {
+      // Check timing and decide winner
+      if (question.responses.playerOne.time > question.responses.playerTwo.time) {
+        // Player One won
+        question.questionWinner = 1;
+        match.playerOne.score += 10;
+        match.playerTwo.score += 5;
+      } else if (question.responses.playerOne.time
+        < question.responses.playerTwo.time) {
+        // Player Two won
+        question.questionWinner = 2;
+        match.playerOne.score += 5;
+        match.playerTwo.score += 10;
+      } else {
+        // Tie
+        question.questionWinner = 3;
+        match.playerOne.score += 5;
+        match.playerTwo.score += 5;
+      }
+    } else if (question.responses.playerOne.isCorrect
+      && !question.responses.playerTwo.isCorrect) {
+      // Player One won
+      question.questionWinner = 1;
+      match.playerOne.score += 10;
+      match.playerTwo.score += 0;
+    } else if (!question.responses.playerOne.isCorrect
+      && question.responses.playerTwo.isCorrect) {
+      // Player Two won
+      question.questionWinner = 2;
+      match.playerOne.score += 0;
+      match.playerTwo.score += 10;
+    }
+
+    match.questions[questionCount] = question;
+    console.log(match);
+    RedisClient.setMatchStatus(match._id, match);
   }
 }

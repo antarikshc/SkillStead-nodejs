@@ -46,6 +46,7 @@ export default class RedisClient {
     redis.getAsync(`${matchId}-status`)
       .then((result) => {
         const matchStatus = JSON.parse(result);
+        matchStatus.status = 1;
         matchStatus.questions = questions;
         redis.set(`${matchId}-status`, JSON.stringify(matchStatus), redis.print);
       });
