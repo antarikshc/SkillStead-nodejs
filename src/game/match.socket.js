@@ -131,7 +131,9 @@ export default class MatchController {
       .then((result) => {
         const matchStatus = JSON.parse(result);
         const currentQuestion = matchStatus.questions[match.count];
-        currentQuestion.responses = {};
+        if (!('responses' in currentQuestion)) {
+          currentQuestion.responses = {};
+        }
 
         if (match.player === 1) {
           currentQuestion.responses.playerOne = response;
