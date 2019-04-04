@@ -4,11 +4,11 @@ import mongoose from 'mongoose';
 const matchSchema = new mongoose.Schema({
   playerOne: {
     player_id: String,
-    score: String
+    score: Number
   },
   playerTwo: {
     player_id: String,
-    score: String
+    score: Number
   },
   winner: Number, // value 1 & 2 for players, 3 for tie
   questions: [{
